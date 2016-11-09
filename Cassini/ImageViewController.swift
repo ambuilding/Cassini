@@ -10,7 +10,7 @@ import UIKit
 
 class ImageViewController: UIViewController, UIScrollViewDelegate {
     
-    var imageURL: NSURL? {
+    var imageURL: URL? {
         didSet {
             image = nil
             /*
@@ -41,8 +41,8 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
              (so other closures on that queue can run concurrently even as this one's blocked)
              */
             
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) {
-                let contentsOfURL = NSData(contentsOfURL: url) // blocks! can't be on main queue!
+            DispatchQueue.global(qos: DispatchQoS.QoSClass.userInitiated).async {
+                let contentsOfURL = try? Data(contentsOf: url) // blocks! can't be on main queue!
                 
                 /* 
                  now that we got the data from the network
@@ -50,7 +50,7 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
                  but we can only do that on the main queue
                  so we queue up a closure here to do that
                  */
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     /*
                      since it could take a long time to fetch the image data
                      we make sure here that the image we fetched 
@@ -92,13 +92,13 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
     // zooming will not work if we don't implement
     // this UIScrollViewDelegate method
     
-    func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return imageView
     }
     
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     
-    private var imageView = UIImageView()
+    fileprivate var imageView = UIImageView()
     
     /*
      a little helper var
@@ -107,7 +107,7 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
      it's purely to make our code look prettier elsewhere in this class
      */
     
-    private var image: UIImage? {
+    fileprivate var image: UIImage? {
         get {
             return imageView.image
         }
@@ -126,7 +126,7 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
      so we can no longer wait to fire off our (expensive) image fetch
      */
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if image == nil {
             fetchImage()

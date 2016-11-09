@@ -15,17 +15,17 @@ class CassiniViewController: UIViewController, UISplitViewControllerDelegate {
      but we call it Storyboard, because all the constants in it
      are strings in our Storyboard
      */
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ShowImageSegue = "Show Image"
     }
     
     // prepare for segue is called
     // even if we invoke the segue from code using perforSegue 
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == Storyboard.ShowImageSegue {
-            if let ivc = segue.destinationViewController.contentViewController as? ImageViewController {
+            if let ivc = segue.destination.contentViewController as? ImageViewController {
                 //if let sendingButton = sender as? UIButton  {
                 //}
                 let imageName = (sender as? UIButton)?.currentTitle
@@ -44,7 +44,7 @@ class CassiniViewController: UIViewController, UISplitViewControllerDelegate {
      that was ctrl-dragged from the view controller icon (orange one at the top)
      */
     
-    @IBAction func showImage(sender: UIButton) {
+    @IBAction func showImage(_ sender: UIButton) {
         
         if let ivc = splitViewController?.viewControllers.last?.contentViewController as? ImageViewController {
             let imageName = sender.currentTitle
@@ -52,7 +52,7 @@ class CassiniViewController: UIViewController, UISplitViewControllerDelegate {
             ivc.title = imageName
 
         } else {
-            performSegueWithIdentifier(Storyboard.ShowImageSegue, sender: sender)
+            performSegue(withIdentifier: Storyboard.ShowImageSegue, sender: sender)
         }
         
     }
@@ -79,11 +79,10 @@ class CassiniViewController: UIViewController, UISplitViewControllerDelegate {
      but that's exactly what we want (i.e. no collapse if the detail ivc is empty)
      */
     
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
+    func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController: UIViewController, onto primaryViewController: UIViewController) -> Bool {
         
         if primaryViewController.contentViewController == self {
-            if let ivc = secondaryViewController.contentViewController as? ImageViewController
-                where ivc.imageURL == nil {
+            if let ivc = secondaryViewController.contentViewController as? ImageViewController, ivc.imageURL == nil {
                 // 没有点击button，也就没有 button title，也就没有为imageURL赋值，为nil
                 return true
             }
